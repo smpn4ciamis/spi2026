@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portal Populasi SPI 2026</title>
+    <style>
+      :root {
+        --bg-1: #0f172a;
+        --bg-2: #111827;
+        --bg-3: #1e1b4b;
+        --card: rgba(255, 255, 255, 0.1);
+        --card-border: rgba(255, 255, 255, 0.2);
+        --text: #e2e8f0;
+        --muted: #cbd5e1;
+        --primary: #38bdf8;
+        --secondary: #a78bfa;
+        --accent: #22d3ee;
+        --success: #34d399;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        font-family: "Inter", "Segoe UI", Roboto, sans-serif;
+      }
+
+      body {
+        color: var(--text);
+        background:
+          radial-gradient(circle at 10% 10%, rgba(56, 189, 248, 0.16), transparent 40%),
+          radial-gradient(circle at 90% 20%, rgba(167, 139, 250, 0.18), transparent 35%),
+          radial-gradient(circle at 50% 100%, rgba(34, 211, 238, 0.14), transparent 40%),
+          linear-gradient(135deg, var(--bg-1), var(--bg-2) 50%, var(--bg-3));
+      }
+
+      .aurora {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        overflow: hidden;
+        z-index: 0;
+      }
+
+      .blob {
+        position: absolute;
+        filter: blur(60px);
+        opacity: 0.35;
+        border-radius: 999px;
+        animation: float 16s ease-in-out infinite;
+      }
+
+      .blob.one {
+        width: 260px;
+        height: 260px;
+        background: #22d3ee;
+        left: -30px;
+        top: 40px;
+      }
+
+      .blob.two {
+        width: 320px;
+        height: 320px;
+        background: #818cf8;
+        right: -70px;
+        top: 20%;
+        animation-delay: -5s;
+      }
+
+      .blob.three {
+        width: 280px;
+        height: 280px;
+        background: #34d399;
+        left: 30%;
+        bottom: -60px;
+        animation-delay: -9s;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0) translateX(0) scale(1);
+        }
+        50% {
+          transform: translateY(-18px) translateX(16px) scale(1.08);
+        }
+      }
+
+      .container {
+        position: relative;
+        z-index: 1;
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 40px 20px 60px;
+      }
+
+      .hero {
+        text-align: center;
+        margin-bottom: 28px;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        background: rgba(255, 255, 255, 0.08);
+        color: #c4f1ff;
+        font-size: 0.85rem;
+        margin-bottom: 16px;
+        backdrop-filter: blur(10px);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(1.8rem, 4vw, 3rem);
+        line-height: 1.2;
+        text-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+      }
+
+      .subtitle {
+        margin: 12px auto 0;
+        max-width: 700px;
+        color: var(--muted);
+        font-size: 1rem;
+      }
+
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        margin: 24px 0 30px;
+      }
+
+      .chip {
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text);
+        border-radius: 999px;
+        padding: 8px 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s ease, background-color 0.2s ease;
+      }
+
+      .chip:hover {
+        transform: translateY(-2px);
+        background: rgba(255, 255, 255, 0.16);
+      }
+
+      .grid {
+        display: grid;
+        gap: 20px;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      }
+
+      .card {
+        border-radius: 20px;
+        padding: 20px;
+        background: var(--card);
+        border: 1px solid var(--card-border);
+        backdrop-filter: blur(12px);
+        box-shadow: 0 15px 40px rgba(2, 8, 23, 0.35);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+      }
+
+      .card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 45px rgba(2, 8, 23, 0.5);
+      }
+
+      .card h2 {
+        margin: 0;
+        font-size: 1.3rem;
+      }
+
+      .card p {
+        margin: 8px 0 16px;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 10px;
+      }
+
+      .class-link {
+        text-decoration: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 14px;
+        border-radius: 12px;
+        color: #dbeafe;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(15, 23, 42, 0.38);
+        transition: border-color 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
+      }
+
+      .class-link:hover {
+        transform: translateX(4px);
+        border-color: rgba(56, 189, 248, 0.85);
+        background: rgba(15, 23, 42, 0.62);
+      }
+
+      .arrow {
+        color: var(--accent);
+        font-size: 1rem;
+      }
+
+      .footer-note {
+        margin-top: 26px;
+        text-align: center;
+        color: #bfdbfe;
+        font-size: 0.9rem;
+      }
+
+      .highlight {
+        color: var(--success);
+        font-weight: 700;
+      }
+
+      code {
+        background: rgba(255, 255, 255, 0.14);
+        padding: 2px 6px;
+        border-radius: 6px;
+      }
+
+      @media (max-width: 640px) {
+        .container {
+          padding: 30px 14px 44px;
+        }
+
+        .card {
+          padding: 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="aurora" aria-hidden="true">
+      <div class="blob one"></div>
+      <div class="blob two"></div>
+      <div class="blob three"></div>
+    </div>
+
+    <main class="container">
+      <section class="hero">
+        <div class="badge">📊 SPI 2026 • Pengumpulan Populasi</div>
+        <h1>Portal Spreadsheet Kelas 7A–7G & 8A–8G</h1>
+        <p class="subtitle">
+          Satu pintu akses untuk seluruh lembar data populasi. Klik kelas yang diinginkan untuk membuka spreadsheet secara cepat.
+        </p>
+      </section>
+
+      <section class="toolbar" aria-label="Aksi cepat">
+        <button class="chip" type="button" onclick="scrollToSection('kelas7')">Ke Kelas 7</button>
+        <button class="chip" type="button" onclick="scrollToSection('kelas8')">Ke Kelas 8</button>
+        <button class="chip" type="button" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })">Kembali ke Atas</button>
+      </section>
+
+      <section class="grid">
+        <article class="card" id="kelas7">
+          <h2>Kelas 7 (A - G)</h2>
+          <p>Silakan pilih kelas untuk input data populasi SPI 2026.</p>
+          <ul>
+            <li><a class="class-link" href="https://docs.google.com/spreadsheets/d/SPI2026-7A/edit" target="_blank" rel="noopener noreferrer">Kelas 7A <span class="arrow">↗</span></a></li>
+            <li><a class="class-link" href="https://docs.google.com/spreadsheets/d/SPI2026-7B/edit" target="_blank" rel="noopener noreferrer">Kelas 7B <span class="arrow">↗</span></a></li>
+            <li><a class="class-link" href="https://docs.google.com/spreadsheets/d/SPI2026-7C/edit" target="_blank" rel="noopener noreferrer">Kelas 7C <span class="arrow">↗</span></a></li>
+            <li><a class="class-link" href="https://docs.google.com/spreadsheets/d/SPI2026-7D/edit" target="_blank" rel="noopener noreferrer">Kelas 7D <span class="arrow">↗</span></a></li>
+            <li><a class="class-link" href="https://docs.google.com/spreadsheets/d/SPI2026-7E/edit" target="_blank" rel="noopener noreferrer">Kelas 7E <span class="arrow">↗</span></a></li>
+            <li><a class="class-link" href="https://docs.google.com/spreadsheets/d/SPI2026-7F/edit" target="_blank" rel="noopener noreferrer">Kelas 7F <span class="arrow">↗</span></a></li>
+            <li><a class="class-link" href="https://docs.google.com/spreadsheets/d/SPI2026-7G/edit" target="_blank" rel="noopener noreferrer">Kelas 7G <span class="arrow">↗</span></a></li>
+          </ul>
+        </article>
+
+        <article class="card" id="kelas8">
+          <h2>Kelas 8 (A - G)</h2>
+          <p>Pastikan memilih kelas yang tepat sebelum mengisi data.</p>
+          <ul>
+            <li><a class="class-link" href="https://docs.google.com/spreadsheets/d/SPI2026-8A/edit" target="_blank" rel="noopener noreferrer">Kelas 8A <span class="arrow">↗</span></a></li>
+            <li><a class="class-link" href="https://docs.google.com/spreadsheets/d/SPI2026-8B/edit" target="_blank" rel="noopener noreferrer">Kelas 8B <span class="arrow">↗</span></a></li>
+            <li><a class="class-link" href="https://docs.google.com/spreadsheets/d/SPI2026-8C/edit" target="_blank" rel="noopener noreferrer">Kelas 8C <span class="arrow">↗</span></a></li>
+            <li><a class="class-link" href="https://docs.google.com/spreadsheets/d/SPI2026-8D/edit" target="_blank" rel="noopener noreferrer">Kelas 8D <span class="arrow">↗</span></a></li>
+            <li><a class="class-link" href="https://docs.google.com/spreadsheets/d/SPI2026-8E/edit" target="_blank" rel="noopener noreferrer">Kelas 8E <span class="arrow">↗</span></a></li>
+            <li><a class="class-link" href="https://docs.google.com/spreadsheets/d/SPI2026-8F/edit" target="_blank" rel="noopener noreferrer">Kelas 8F <span class="arrow">↗</span></a></li>
+            <li><a class="class-link" href="https://docs.google.com/spreadsheets/d/SPI2026-8G/edit" target="_blank" rel="noopener noreferrer">Kelas 8G <span class="arrow">↗</span></a></li>
+          </ul>
+        </article>
+      </section>
+
+      <p class="footer-note">
+        <span class="highlight">Catatan:</span> Ganti ID placeholder pada URL (contoh <code>SPI2026-7A</code>) dengan ID spreadsheet asli.
+      </p>
+    </main>
+
+    <script>
+      function scrollToSection(id) {
+        const el = document.getElementById(id);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }
+    </script>
+  </body>
+</html>
