@@ -170,6 +170,12 @@
         <div class="actions" style="margin-top: 12px">
           <button id="saveRosterBtn">Simpan daftar kelas</button>
           <button class="secondary" id="clearRosterBtn">Kosongkan kelas ini</button>
+          <button class="secondary" id="exportRosterBtn">Export roster (.json)</button>
+        </div>
+
+        <div style="margin-top: 12px">
+          <label for="importRosterFile">Import roster dari operator (.json)</label>
+          <input id="importRosterFile" type="file" accept=".json" />
         </div>
       </section>
 
@@ -218,6 +224,8 @@
       const studentsTextarea = document.getElementById('studentsTextarea');
       const saveRosterBtn = document.getElementById('saveRosterBtn');
       const clearRosterBtn = document.getElementById('clearRosterBtn');
+      const exportRosterBtn = document.getElementById('exportRosterBtn');
+      const importRosterFile = document.getElementById('importRosterFile');
       const csvFileInput = document.getElementById('csvFile');
       const nameColumnSelect = document.getElementById('nameColumn');
       const classColumnSelect = document.getElementById('classColumn');
@@ -282,6 +290,55 @@
       });
 
       classSelect.addEventListener('change', refreshRosterTextarea);
+
+      exportRosterBtn.addEventListener('click', () => {
+        const rosters = loadRosters();
+        const payload = {
+          exportedAt: new Date().toISOString(),
+          classes: rosters
+        };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'roster-siswa.json';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      });
+
+      importRosterFile.addEventListener('change', async (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        try {
+          const text = await file.text();
+          const parsed = JSON.parse(text);
+          const classes = parsed?.classes;
+
+          if (!classes || typeof classes !== 'object') {
+            alert('Format file roster tidak valid.');
+            return;
+          }
+
+          const rosters = {};
+          classList.forEach((className) => {
+            const list = Array.isArray(classes[className]) ? classes[className] : [];
+            rosters[className] = Array.from(
+              new Set(list.map((name) => String(name).trim()).filter(Boolean))
+            );
+          });
+
+          saveRosters(rosters);
+          refreshRosterTextarea();
+          alert('Import roster berhasil.');
+        } catch {
+          alert('File roster gagal dibaca. Pastikan format JSON benar.');
+        } finally {
+          event.target.value = '';
+        }
+      });
 
       function parseCsvLine(line) {
         const out = [];
