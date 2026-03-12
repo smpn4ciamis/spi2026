@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monitoring Pengisian Google Form Siswa</title>
+    <style>
+      :root {
+        --bg: #f6f8fb;
+        --card: #fff;
+        --text: #1f2937;
+        --muted: #6b7280;
+        --accent: #2563eb;
+        --ok: #15803d;
+        --warn: #b45309;
+        --border: #dbe3ef;
+      }
+
+      * {
+        box-sizing: border-box;
+        font-family: Inter, Arial, sans-serif;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      header {
+        padding: 20px;
+        background: #0f172a;
+        color: #fff;
+      }
+
+      header h1 {
+        margin: 0 0 8px;
+        font-size: 1.4rem;
+      }
+
+      header p {
+        margin: 0;
+        color: #cbd5e1;
+      }
+
+      .container {
+        max-width: 1100px;
+        margin: 20px auto;
+        padding: 0 16px 32px;
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 16px;
+      }
+
+      .grid {
+        display: grid;
+        gap: 12px;
+      }
+
+      .grid.two {
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      }
+
+      label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 6px;
+      }
+
+      input,
+      select,
+      textarea,
+      button {
+        width: 100%;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        padding: 10px;
+        font-size: 0.95rem;
+      }
+
+      button {
+        background: var(--accent);
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+      }
+
+      button.secondary {
+        background: #e2e8f0;
+        color: #0f172a;
+      }
+
+      .actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 10px;
+      }
+
+      .muted {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .status {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 700;
+      }
+
+      .status.ok {
+        background: #dcfce7;
+        color: var(--ok);
+      }
+
+      .status.warn {
+        background: #fef3c7;
+        color: var(--warn);
+      }
+
+      .class-card h3 {
+        margin: 0 0 8px;
+      }
+
+      ul {
+        margin: 6px 0;
+        padding-left: 18px;
+      }
+
+      li {
+        margin-bottom: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Monitoring Pengisian Form Siswa (Kelas 7A–7G & 8A–8G)</h1>
+      <p>
+        Alur cepat: (1) isi daftar siswa per kelas, (2) unggah CSV jawaban dari
+        Google Form, (3) lihat yang sudah & belum mengisi.
+      </p>
+    </header>
+
+    <main class="container">
+      <section class="card">
+        <h2>1) Data Master Siswa</h2>
+        <p class="muted">
+          Tempel daftar nama siswa untuk setiap kelas (satu nama per baris). Data
+          tersimpan di browser ini.
+        </p>
+
+        <div class="grid two">
+          <div>
+            <label for="classSelect">Pilih kelas</label>
+            <select id="classSelect"></select>
+          </div>
+          <div>
+            <label for="studentsTextarea">Daftar siswa (satu baris = satu nama)</label>
+            <textarea id="studentsTextarea" rows="8"></textarea>
+          </div>
+        </div>
+
+        <div class="actions" style="margin-top: 12px">
+          <button id="saveRosterBtn">Simpan daftar kelas</button>
+          <button class="secondary" id="clearRosterBtn">Kosongkan kelas ini</button>
+          <button class="secondary" id="exportRosterBtn">Export roster (.json)</button>
+        </div>
+
+        <div style="margin-top: 12px">
+          <label for="importRosterFile">Import roster dari operator (.json)</label>
+          <input id="importRosterFile" type="file" accept=".json" />
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>2) Import Jawaban Google Form</h2>
+        <p class="muted">
+          Unduh respon Google Form sebagai CSV, lalu unggah satu atau beberapa file sekaligus di sini.
+        </p>
+        <div class="grid two">
+          <div>
+            <label for="csvFile">File CSV respon</label>
+            <input id="csvFile" type="file" accept=".csv" multiple />
+          </div>
+          <div>
+            <label for="nameColumn">Kolom nama siswa</label>
+            <select id="nameColumn" disabled></select>
+          </div>
+          <div>
+            <label for="classColumn">Kolom kelas</label>
+            <select id="classColumn" disabled></select>
+          </div>
+        </div>
+
+        <div class="actions" style="margin-top: 12px">
+          <button id="processBtn" disabled>Proses pengecekan</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>3) Hasil Monitoring</h2>
+        <p class="muted" id="summaryText">
+          Belum ada data yang diproses.
+        </p>
+        <div class="grid two" id="results"></div>
+      </section>
+    </main>
+
+    <script>
+      const classList = [
+        '7A', '7B', '7C', '7D', '7E', '7F', '7G',
+        '8A', '8B', '8C', '8D', '8E', '8F', '8G'
+      ];
+
+      const rosterStorageKey = 'studentRostersByClass';
+      const classSelect = document.getElementById('classSelect');
+      const studentsTextarea = document.getElementById('studentsTextarea');
+      const saveRosterBtn = document.getElementById('saveRosterBtn');
+      const clearRosterBtn = document.getElementById('clearRosterBtn');
+      const exportRosterBtn = document.getElementById('exportRosterBtn');
+      const importRosterFile = document.getElementById('importRosterFile');
+      const csvFileInput = document.getElementById('csvFile');
+      const nameColumnSelect = document.getElementById('nameColumn');
+      const classColumnSelect = document.getElementById('classColumn');
+      const processBtn = document.getElementById('processBtn');
+      const resultsContainer = document.getElementById('results');
+      const summaryText = document.getElementById('summaryText');
+
+      let csvRows = [];
+      let csvHeaders = [];
+      let importedFileCount = 0;
+
+      function normalizeName(value) {
+        return value.trim().toLowerCase().replace(/\s+/g, ' ');
+      }
+
+      function loadRosters() {
+        try {
+          return JSON.parse(localStorage.getItem(rosterStorageKey)) || {};
+        } catch {
+          return {};
+        }
+      }
+
+      function saveRosters(rosters) {
+        localStorage.setItem(rosterStorageKey, JSON.stringify(rosters));
+      }
+
+      function setupClassOptions() {
+        classList.forEach((className) => {
+          const option = document.createElement('option');
+          option.value = className;
+          option.textContent = className;
+          classSelect.appendChild(option);
+        });
+      }
+
+      function refreshRosterTextarea() {
+        const rosters = loadRosters();
+        const currentClass = classSelect.value;
+        const data = rosters[currentClass] || [];
+        studentsTextarea.value = data.join('\n');
+      }
+
+      saveRosterBtn.addEventListener('click', () => {
+        const rosters = loadRosters();
+        const currentClass = classSelect.value;
+        const students = studentsTextarea.value
+          .split('\n')
+          .map((line) => line.trim())
+          .filter(Boolean);
+
+        rosters[currentClass] = Array.from(new Set(students));
+        saveRosters(rosters);
+        alert(`Daftar siswa kelas ${currentClass} disimpan (${students.length} siswa).`);
+      });
+
+      clearRosterBtn.addEventListener('click', () => {
+        const rosters = loadRosters();
+        const currentClass = classSelect.value;
+        delete rosters[currentClass];
+        saveRosters(rosters);
+        studentsTextarea.value = '';
+      });
+
+      classSelect.addEventListener('change', refreshRosterTextarea);
+
+      exportRosterBtn.addEventListener('click', () => {
+        const rosters = loadRosters();
+        const payload = {
+          exportedAt: new Date().toISOString(),
+          classes: rosters
+        };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'roster-siswa.json';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      });
+
+      importRosterFile.addEventListener('change', async (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        try {
+          const text = await file.text();
+          const parsed = JSON.parse(text);
+          const classes = parsed?.classes;
+
+          if (!classes || typeof classes !== 'object') {
+            alert('Format file roster tidak valid.');
+            return;
+          }
+
+          const rosters = {};
+          classList.forEach((className) => {
+            const list = Array.isArray(classes[className]) ? classes[className] : [];
+            rosters[className] = Array.from(
+              new Set(list.map((name) => String(name).trim()).filter(Boolean))
+            );
+          });
+
+          saveRosters(rosters);
+          refreshRosterTextarea();
+          alert('Import roster berhasil.');
+        } catch {
+          alert('File roster gagal dibaca. Pastikan format JSON benar.');
+        } finally {
+          event.target.value = '';
+        }
+      });
+
+      function parseCsvLine(line) {
+        const out = [];
+        let current = '';
+        let inQuotes = false;
+
+        for (let i = 0; i < line.length; i++) {
+          const char = line[i];
+          const next = line[i + 1];
+          if (char === '"') {
+            if (inQuotes && next === '"') {
+              current += '"';
+              i++;
+            } else {
+              inQuotes = !inQuotes;
+            }
+          } else if (char === ',' && !inQuotes) {
+            out.push(current);
+            current = '';
+          } else {
+            current += char;
+          }
+        }
+        out.push(current);
+        return out;
+      }
+
+      function parseCsv(content) {
+        const lines = content.split(/\r?\n/).filter((line) => line.trim() !== '');
+        if (!lines.length) return { headers: [], rows: [] };
+
+        const headers = parseCsvLine(lines[0]).map((h) => h.trim());
+        const rows = lines.slice(1).map((line) => {
+          const values = parseCsvLine(line);
+          const row = {};
+          headers.forEach((header, index) => {
+            row[header] = (values[index] || '').trim();
+          });
+          return row;
+        });
+
+        return { headers, rows };
+      }
+
+      csvFileInput.addEventListener('change', async (event) => {
+        const files = Array.from(event.target.files || []);
+        if (!files.length) return;
+
+        csvRows = [];
+        csvHeaders = [];
+
+        for (const file of files) {
+          if (!file.name.toLowerCase().endsWith('.csv')) continue;
+          const text = await file.text();
+          const parsed = parseCsv(text);
+
+          if (!parsed.headers.length) continue;
+
+          if (!csvHeaders.length) {
+            csvHeaders = parsed.headers;
+          }
+
+          const mappedRows = parsed.rows.map((row) => {
+            const normalizedRow = {};
+            csvHeaders.forEach((header) => {
+              normalizedRow[header] = row[header] || '';
+            });
+            return normalizedRow;
+          });
+
+          csvRows.push(...mappedRows);
+        }
+
+        importedFileCount = files.length;
+
+        if (!csvHeaders.length) {
+          alert('File CSV kosong / tidak valid.');
+          processBtn.disabled = true;
+          return;
+        }
+
+        [nameColumnSelect, classColumnSelect].forEach((select) => {
+          select.innerHTML = '';
+          csvHeaders.forEach((header) => {
+            const option = document.createElement('option');
+            option.value = header;
+            option.textContent = header;
+            select.appendChild(option);
+          });
+          select.disabled = false;
+        });
+
+        const guessedName = csvHeaders.find((h) => /nama/i.test(h));
+        const guessedClass = csvHeaders.find((h) => /kelas/i.test(h));
+        if (guessedName) nameColumnSelect.value = guessedName;
+        if (guessedClass) classColumnSelect.value = guessedClass;
+
+        summaryText.textContent = `${importedFileCount} file CSV dimuat (${csvRows.length} baris data). Klik Proses pengecekan.`;
+        processBtn.disabled = false;
+      });
+
+      function renderResults(report) {
+        resultsContainer.innerHTML = '';
+        const cards = classList.map((className) => {
+          const data = report[className] || {
+            total: 0,
+            filled: [],
+            missing: []
+          };
+
+          const completed = data.filled.length;
+          const total = data.total;
+          const percentage = total ? Math.round((completed / total) * 100) : 0;
+
+          const card = document.createElement('article');
+          card.className = 'card class-card';
+          card.innerHTML = `
+            <h3>${className}</h3>
+            <p>
+              <span class="status ${percentage === 100 ? 'ok' : 'warn'}">${completed}/${total} (${percentage}%)</span>
+            </p>
+            <p><strong>Sudah isi:</strong></p>
+            <ul>${data.filled.map((name) => `<li>${name}</li>`).join('') || '<li>-</li>'}</ul>
+            <p><strong>Belum isi:</strong></p>
+            <ul>${data.missing.map((name) => `<li>${name}</li>`).join('') || '<li>-</li>'}</ul>
+          `;
+          return card;
+        });
+
+        cards.forEach((card) => resultsContainer.appendChild(card));
+      }
+
+      processBtn.addEventListener('click', () => {
+        const rosters = loadRosters();
+        const nameColumn = nameColumnSelect.value;
+        const classColumn = classColumnSelect.value;
+
+        const respondersByClass = {};
+        classList.forEach((className) => {
+          respondersByClass[className] = new Set();
+        });
+
+        csvRows.forEach((row) => {
+          const className = (row[classColumn] || '').toUpperCase().trim();
+          const studentName = (row[nameColumn] || '').trim();
+          if (!classList.includes(className) || !studentName) return;
+          respondersByClass[className].add(normalizeName(studentName));
+        });
+
+        const report = {};
+        let allTotal = 0;
+        let allDone = 0;
+
+        classList.forEach((className) => {
+          const roster = rosters[className] || [];
+          const normalizedToOriginal = new Map(
+            roster.map((name) => [normalizeName(name), name])
+          );
+          const normalizedRoster = Array.from(normalizedToOriginal.keys());
+
+          const filled = normalizedRoster
+            .filter((key) => respondersByClass[className].has(key))
+            .map((key) => normalizedToOriginal.get(key));
+
+          const missing = normalizedRoster
+            .filter((key) => !respondersByClass[className].has(key))
+            .map((key) => normalizedToOriginal.get(key));
+
+          report[className] = {
+            total: roster.length,
+            filled,
+            missing
+          };
+
+          allTotal += roster.length;
+          allDone += filled.length;
+        });
+
+        summaryText.textContent = `Total seluruh siswa: ${allDone}/${allTotal} sudah mengisi. Sumber data: ${importedFileCount} file CSV (${csvRows.length} baris).`;
+        renderResults(report);
+      });
+
+      setupClassOptions();
+      classSelect.value = classList[0];
+      refreshRosterTextarea();
+    </script>
+  </body>
+</html>
